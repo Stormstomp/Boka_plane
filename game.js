@@ -54,6 +54,10 @@ cernovarBadgeImage.onerror = () => {
 };
 
 let audioContext;
+const crashAudio = new Audio('dzing.mp3');
+crashAudio.preload = 'auto';
+crashAudio.load();
+
 function getAudioContext() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -82,8 +86,21 @@ function playJumpSound() {
   oscillator.stop(now + 0.18);
 }
 
-const crashAudio = new Audio('dzing.mp3');
-crashAudio.preload = 'auto';
+function unlockAudio() {
+  if (audioContext && audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => {});
+  }
+  if (crashAudio && crashAudio.paused && crashAudio.readyState >= 2) {
+    crashAudio.play().then(() => {
+      crashAudio.pause();
+      crashAudio.currentTime = 0;
+    }).catch(() => {});
+  }
+}
+
+window.addEventListener('pointerdown', unlockAudio, { once: true });
+window.addEventListener('keydown', unlockAudio, { once: true });
+
 function playCrashSound() {
   crashAudio.currentTime = 0;
   crashAudio.volume = 0.6;
