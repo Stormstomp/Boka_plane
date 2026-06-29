@@ -56,7 +56,12 @@ faceEndImage.onload = () => {
   faceEndLoaded = true;
 };
 faceEndImage.onerror = () => {
-  faceEndLoaded = false;
+  // Если GitHub Pages ещё не успели развернуть asset, пробуем raw-URL.
+  if (!faceEndLoaded && faceEndImage.src.indexOf('raw.githubusercontent.com') === -1) {
+    faceEndImage.src = 'https://raw.githubusercontent.com/Stormstomp/Boka_plane/main/face_end.jpg';
+  } else {
+    faceEndLoaded = false;
+  }
 };
 
 let backgroundLoaded = false;
@@ -197,7 +202,7 @@ function jump() {
   if (gameOver) return;
   if (!running) {
     startGame();
-    return;
+    // Если игра только запустилась, продолжаем и применяем прыжок сразу.
   }
 
   if (coyoteFrames > 0) {
@@ -472,6 +477,12 @@ function drawBird() {
     ctx.clip();
     ctx.drawImage(faceEndImage, -bird.radius, -bird.radius, bird.radius * 2, bird.radius * 2);
     ctx.restore();
+  } else if (showEndFace && !faceEndLoaded) {
+    ctx.fillStyle = '#8b0000';
+    ctx.font = '700 10px Inter, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('X', 0, 0);
   } else if (faceLoaded) {
     ctx.save();
     ctx.beginPath();
