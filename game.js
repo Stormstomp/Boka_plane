@@ -16,6 +16,9 @@ const PIPE_WIDTH = 70;
 const PIPE_GAP = 150;
 const PIPE_SPACING = 200;
 const PIPE_SPEED = 2.0;
+const MAX_DELTA = 2;
+
+let lastTime = 0;
 
 let bird;
 let pipes;
@@ -157,6 +160,7 @@ function startGame() {
   if (window.Telegram && window.Telegram.WebApp) {
     window.Telegram.WebApp.MainButton.hide();
   }
+  lastTime = 0;
   window.requestAnimationFrame(loop);
 }
 
@@ -186,12 +190,12 @@ function endGame() {
   }
 }
 
-function update() {
+function update(delta = 1) {
   if (!running) return;
 
-  bird.velocity += GRAVITY;
+  bird.velocity += GRAVITY * delta;
   bird.velocity = Math.min(bird.velocity, MAX_FALL_SPEED);
-  bird.y += bird.velocity;
+  bird.y += bird.velocity * delta;
   bird.rotation = Math.min(Math.max(bird.velocity * 1.8, -0.45), 1.1);
 
   if (bird.y + bird.radius >= GAME_HEIGHT || bird.y - bird.radius <= 0) {
@@ -199,7 +203,7 @@ function update() {
   }
 
   pipes.forEach((pipe) => {
-    pipe.x -= PIPE_SPEED;
+    pipe.x -= PIPE_SPEED * delta;
   });
 
   if (pipes[0].x + PIPE_WIDTH < 0) {
@@ -385,8 +389,12 @@ function drawBird() {
   ctx.restore();
 }
 
-function loop() {
-  update();
+function loop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  const delta = Math.min(MAX_DELTA, (timestamp - lastTime) / (1000 / 60));
+  lastTime = timestamp;
+
+  update(delta);
   draw();
   if (running) {
     animationId = window.requestAnimationFrame(loop);
