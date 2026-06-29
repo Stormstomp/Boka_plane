@@ -9,7 +9,7 @@ const restartBtn = document.getElementById('restartBtn');
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
-const GRAVITY = 0.55;
+const GRAVITY = 0.48;
 const JUMP_STRENGTH = -10.5;
 const PIPE_WIDTH = 70;
 const PIPE_GAP = 140;
@@ -153,6 +153,9 @@ function startGame() {
   running = true;
   overlay.style.display = 'none';
   overlay.style.pointerEvents = 'none';
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.MainButton.hide();
+  }
   window.requestAnimationFrame(loop);
 }
 
@@ -407,7 +410,13 @@ overlay.addEventListener('click', () => {
 });
 
 window.addEventListener('telegramStart', () => {
-  if (!running) startGame();
+  if (!running) {
+    if (gameOver) {
+      resetGame();
+      draw();
+    }
+    startGame();
+  }
 });
 
 resetGame();
