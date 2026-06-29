@@ -17,6 +17,8 @@ const PIPE_GAP = 150;
 const PIPE_SPACING = 200;
 const PIPE_SPEED = 2.0;
 const MAX_DELTA = 2;
+// Прощающий хитбокс: уменьшаем радиус столкновения птицы на 15%
+const BIRD_HITBOX_SCALE = 0.85;
 
 let lastTime = 0;
 
@@ -227,6 +229,7 @@ function update(delta = 1) {
     pipes.push(createPipe(pipes[pipes.length - 1].x + PIPE_SPACING));
   }
 
+  const hitboxRadius = bird.radius * BIRD_HITBOX_SCALE;
   pipes.forEach((pipe) => {
     if (!pipe.passed && bird.x > pipe.x + pipe.width) {
       pipe.passed = true;
@@ -234,8 +237,8 @@ function update(delta = 1) {
       scoreEl.textContent = `Счёт: ${score}`;
     }
 
-    const hitTop = bird.x + bird.radius > pipe.x && bird.x - bird.radius < pipe.x + pipe.width && bird.y - bird.radius < pipe.topHeight;
-    const hitBottom = bird.x + bird.radius > pipe.x && bird.x - bird.radius < pipe.x + pipe.width && bird.y + bird.radius > pipe.bottomY;
+    const hitTop = bird.x + hitboxRadius > pipe.x && bird.x - hitboxRadius < pipe.x + pipe.width && bird.y - hitboxRadius < pipe.topHeight;
+    const hitBottom = bird.x + hitboxRadius > pipe.x && bird.x - hitboxRadius < pipe.x + pipe.width && bird.y + hitboxRadius > pipe.bottomY;
 
     if (hitTop || hitBottom) {
       endGame();
