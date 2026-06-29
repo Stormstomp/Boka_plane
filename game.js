@@ -53,6 +53,45 @@ cernovarBadgeImage.onerror = () => {
   cernovarBadgeLoaded = false;
 };
 
+let audioContext;
+function getAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioContext;
+}
+
+function playJumpSound() {
+  const ac = getAudioContext();
+  const now = ac.currentTime;
+  const oscillator = ac.createOscillator();
+  const gain = ac.createGain();
+
+  oscillator.type = 'triangle';
+  oscillator.frequency.setValueAtTime(240, now);
+  oscillator.frequency.exponentialRampToValueAtTime(620, now + 0.16);
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.linearRampToValueAtTime(0.24, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+  oscillator.connect(gain);
+  gain.connect(ac.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.18);
+}
+
+const crashAudio = new Audio('dzing.mp3');
+crashAudio.preload = 'auto';
+function playCrashSound() {
+  crashAudio.currentTime = 0;
+  crashAudio.volume = 0.6;
+  crashAudio.play().catch(() => {
+    // sound playback may be blocked until user interaction
+  });
+}
+
 function createBird() {
   return {
     x: 80,
@@ -83,7 +122,7 @@ function resetGame() {
   score = 0;
   running = false;
   gameOver = false;
-  welcomeTitle.textContent = 'Привет големчик✋!';
+  welcomeTitle.textContent = 'Привет големчик 👋';
   welcomeText.textContent = 'Помоги Бокичу встать на путь ЗОЖа и избежать столкновения с соблазнами.';
   statusEl.classList.add('hidden');
   scoreEl.textContent = `Счёт: ${score}`;
@@ -103,6 +142,7 @@ function startGame() {
 function endGame() {
   running = false;
   gameOver = true;
+  playCrashSound();
   welcomeTitle.textContent = '';
   welcomeText.textContent = '';
   statusEl.textContent = 'О нет, попытка ЗОЖа провалилась!';
@@ -119,6 +159,7 @@ function endGame() {
 function jump() {
   if (gameOver) return;
   bird.velocity = JUMP_STRENGTH;
+  playJumpSound();
   startGame();
 }
 
