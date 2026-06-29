@@ -407,6 +407,7 @@ restartBtn.addEventListener('click', () => {
   if (window.Telegram && window.Telegram.WebApp) {
     window.Telegram.WebApp.MainButton.hide();
   }
+  jump();
 });
 
 function handleStartInput(event) {
@@ -420,8 +421,12 @@ overlay.addEventListener('pointerdown', handleStartInput, { passive: false });
 overlay.addEventListener('click', handleStartInput);
 canvas.addEventListener('pointerdown', handleStartInput, { passive: false });
 canvas.addEventListener('touchstart', handleStartInput, { passive: false });
+canvas.addEventListener('mousedown', handleStartInput, { passive: false });
+canvas.addEventListener('touchend', handleStartInput, { passive: false });
 window.addEventListener('pointerdown', handleStartInput, { passive: false });
 window.addEventListener('touchstart', handleStartInput, { passive: false });
+window.addEventListener('mousedown', handleStartInput, { passive: false });
+window.addEventListener('touchend', handleStartInput, { passive: false });
 
 window.addEventListener('telegramStart', () => {
   if (!running) {
