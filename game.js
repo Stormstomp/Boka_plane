@@ -420,6 +420,8 @@ overlay.addEventListener('pointerdown', handleStartInput, { passive: false });
 overlay.addEventListener('click', handleStartInput);
 canvas.addEventListener('pointerdown', handleStartInput, { passive: false });
 canvas.addEventListener('touchstart', handleStartInput, { passive: false });
+window.addEventListener('pointerdown', handleStartInput, { passive: false });
+window.addEventListener('touchstart', handleStartInput, { passive: false });
 
 window.addEventListener('telegramStart', () => {
   if (!running) {
