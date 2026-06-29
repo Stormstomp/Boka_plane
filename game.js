@@ -9,12 +9,13 @@ const restartBtn = document.getElementById('restartBtn');
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
-const GRAVITY = 0.48;
-const JUMP_STRENGTH = -10.5;
+const GRAVITY = 0.38;
+const JUMP_STRENGTH = -9.2;
+const MAX_FALL_SPEED = 12;
 const PIPE_WIDTH = 70;
-const PIPE_GAP = 140;
-const PIPE_SPACING = 190;
-const PIPE_SPEED = 2.5;
+const PIPE_GAP = 150;
+const PIPE_SPACING = 200;
+const PIPE_SPEED = 2.0;
 
 let bird;
 let pipes;
@@ -189,8 +190,9 @@ function update() {
   if (!running) return;
 
   bird.velocity += GRAVITY;
+  bird.velocity = Math.min(bird.velocity, MAX_FALL_SPEED);
   bird.y += bird.velocity;
-  bird.rotation = Math.min(Math.max(bird.velocity * 2, -0.5), 1.2);
+  bird.rotation = Math.min(Math.max(bird.velocity * 1.8, -0.45), 1.1);
 
   if (bird.y + bird.radius >= GAME_HEIGHT || bird.y - bird.radius <= 0) {
     endGame();

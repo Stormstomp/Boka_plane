@@ -13,6 +13,8 @@ body {
   background: linear-gradient(180deg, #102a42 0%, #152a35 100%);
   font-family: Inter, system-ui, sans-serif;
   color: var(--fg);
+  touch-action: none;
+  overscroll-behavior: none;
 }
 body {
   display: flex;
