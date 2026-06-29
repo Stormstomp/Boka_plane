@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Flappy Bird WebApp</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <h1>Flappy Bird WebApp</h1>
+    <p>Нажми пробел, клик или тап, чтобы взлететь. Удерживайся внутри трубы.</p>
+    <div class="board">
+      <canvas id="gameCanvas" width="320" height="520"></canvas>
+      <div id="overlay" class="overlay">
+        <div class="overlay-content">
+          <div id="welcomeTitle">Привет големчик ✋</div>
+          <div id="welcomeText">Помоги Бокичу встать на путь ЗОЖа и избежать столкновения с соблазнами.</div>
+          <div id="status" class="hidden"></div>
+          <div id="score">Счёт: 0</div>
+          <button id="restartBtn">Начать</button>
+        </div>
+      </div>
+    </div>
+    <footer>Мобильная версия для Telegram-веб-просмотра.</footer>
+  </div>
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  <script src="telegram.js" defer></script>
+  <script src="game.js" defer></script>
+</body>
+</html>
