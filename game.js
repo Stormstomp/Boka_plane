@@ -41,6 +41,8 @@ let jumpBufferFrames = 0;
 let coyoteFrames = 0;
 let coyoteImmuneFrames = 0;
 let showEndFace = false;
+let displayFPS = 0;
+let displayDelta = 0;
 const faceImage = new Image();
 faceImage.src = 'face.png';
 faceImage.onload = () => {
@@ -347,6 +349,13 @@ function draw() {
   drawGround();
   drawPipes();
   drawBird();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 14px Inter, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`FPS: ${displayFPS}`, 12, 12);
+  ctx.fillText(`delta: ${displayDelta.toFixed(3)}`, 12, 30);
 }
 
 function drawGround() {
@@ -508,8 +517,13 @@ function drawBird() {
 
 function loop(timestamp) {
   if (!lastTime) lastTime = timestamp;
-  const delta = Math.min(MAX_DELTA, (timestamp - lastTime) / (1000 / 60));
+  const frameTime = timestamp - lastTime;
+  const rawDelta = frameTime / (1000 / 60);
+  const delta = Math.min(MAX_DELTA, rawDelta);
   lastTime = timestamp;
+
+  displayDelta = delta;
+  displayFPS = Math.round(1000 / Math.max(frameTime, 1));
 
   update(delta);
   draw();
