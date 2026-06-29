@@ -19,6 +19,12 @@ const PIPE_SPEED = 2.0;
 const MAX_DELTA = 2;
 // Прощающий хитбокс: уменьшаем радиус столкновения птицы на 15%
 const BIRD_HITBOX_SCALE = 0.85;
+// Размер первых труб: начинаем с чуть более мягкой, широкой щели
+const INITIAL_PIPE_GAP = Math.round(PIPE_GAP * 1.2);
+// Время койота и буфер ввода
+const INPUT_BUFFER_FRAMES = 5;
+const COYOTE_TIME_FRAMES = 3;
+const COYOTE_IMMUNITY_FRAMES = 2;
 
 let lastTime = 0;
 
@@ -30,6 +36,11 @@ let running;
 let gameOver;
 let animationId;
 let faceLoaded = false;
+let faceEndLoaded = false;
+let jumpBufferFrames = 0;
+let coyoteFrames = 0;
+let coyoteImmuneFrames = 0;
+let showEndFace = false;
 const faceImage = new Image();
 faceImage.src = 'face.png';
 faceImage.onload = () => {
@@ -37,6 +48,15 @@ faceImage.onload = () => {
 };
 faceImage.onerror = () => {
   faceLoaded = false;
+};
+
+const faceEndImage = new Image();
+faceEndImage.src = 'face_end.jpg';
+faceEndImage.onload = () => {
+  faceEndLoaded = true;
+};
+faceEndImage.onerror = () => {
+  faceEndLoaded = false;
 };
 
 let backgroundLoaded = false;
@@ -125,14 +145,14 @@ function createBird() {
   };
 }
 
-function createPipe(x) {
+function createPipe(x, gap = PIPE_GAP) {
   const topHeight = 80 + Math.random() * 180;
   const style = Math.random() < 0.4 ? 'green' : 'cream';
   return {
     x,
     width: PIPE_WIDTH,
     topHeight,
-    bottomY: topHeight + PIPE_GAP,
+    bottomY: topHeight + gap,
     style,
     passed: false,
   };
@@ -140,11 +160,18 @@ function createPipe(x) {
 
 function resetGame() {
   bird = createBird();
-  pipes = [createPipe(GAME_WIDTH + 20), createPipe(GAME_WIDTH + 20 + PIPE_SPACING)];
+  pipes = [
+    createPipe(GAME_WIDTH + 20, INITIAL_PIPE_GAP),
+    createPipe(GAME_WIDTH + 20 + PIPE_SPACING, INITIAL_PIPE_GAP),
+  ];
   frameCount = 0;
   score = 0;
   running = false;
   gameOver = false;
+  jumpBufferFrames = 0;
+  coyoteFrames = 0;
+  coyoteImmuneFrames = 0;
+  showEndFace = false;
   welcomeTitle.textContent = 'Привет големчик 👋';
   welcomeText.textContent = 'Помоги Бокичу встать на путь ЗОЖа и избежать столкновения с соблазнами.';
   statusEl.classList.add('hidden');
@@ -170,7 +197,27 @@ function jump() {
   if (gameOver) return;
   if (!running) {
     startGame();
+    return;
   }
+
+  if (coyoteFrames > 0) {
+    // Прыжок внутри окна койота спасает игрока от столкновения
+    bird.y = Math.min(bird.y, GAME_HEIGHT - bird.radius - 1);
+    bird.y = Math.max(bird.y, bird.radius + 1);
+    bird.velocity = JUMP_STRENGTH;
+    coyoteFrames = 0;
+    coyoteImmuneFrames = COYOTE_IMMUNITY_FRAMES;
+    playJumpSound();
+    return;
+  }
+
+  if (bird.velocity < 0) {
+    // Игрок нажал чуть раньше, пока птица ещё летела вверх;
+    // запоминаем на несколько кадров
+    jumpBufferFrames = INPUT_BUFFER_FRAMES;
+    return;
+  }
+
   bird.velocity = JUMP_STRENGTH;
   playJumpSound();
 }
@@ -178,6 +225,7 @@ function jump() {
 function endGame() {
   running = false;
   gameOver = true;
+  showEndFace = true;
   playCrashSound();
   welcomeTitle.textContent = '';
   welcomeText.textContent = '';
@@ -194,6 +242,16 @@ function endGame() {
 
 function update(delta = 1) {
   if (!running) return;
+
+  if (jumpBufferFrames > 0) {
+    if (bird.velocity >= 0) {
+      bird.velocity = JUMP_STRENGTH;
+      playJumpSound();
+      jumpBufferFrames = 0;
+    } else {
+      jumpBufferFrames -= 1;
+    }
+  }
 
   // Ограничиваем delta, чтобы при лагах птица не пролетала сквозь текстуры
   const limitedDelta = Math.min(delta, MAX_DELTA);
@@ -217,7 +275,10 @@ function update(delta = 1) {
   }
 
   if (bird.y + bird.radius >= GAME_HEIGHT || bird.y - bird.radius <= 0) {
-    endGame();
+    if (coyoteFrames === 0 && coyoteImmuneFrames === 0) {
+      coyoteFrames = COYOTE_TIME_FRAMES;
+      return;
+    }
   }
 
   pipes.forEach((pipe) => {
@@ -237,13 +298,31 @@ function update(delta = 1) {
       scoreEl.textContent = `Счёт: ${score}`;
     }
 
+    if (coyoteImmuneFrames > 0) {
+      return;
+    }
+
     const hitTop = bird.x + hitboxRadius > pipe.x && bird.x - hitboxRadius < pipe.x + pipe.width && bird.y - hitboxRadius < pipe.topHeight;
     const hitBottom = bird.x + hitboxRadius > pipe.x && bird.x - hitboxRadius < pipe.x + pipe.width && bird.y + hitboxRadius > pipe.bottomY;
 
     if (hitTop || hitBottom) {
-      endGame();
+      if (coyoteFrames === 0) {
+        coyoteFrames = COYOTE_TIME_FRAMES;
+      }
     }
   });
+
+  if (coyoteFrames > 0) {
+    coyoteFrames -= 1;
+    if (coyoteFrames === 0) {
+      endGame();
+      return;
+    }
+  }
+
+  if (coyoteImmuneFrames > 0) {
+    coyoteImmuneFrames -= 1;
+  }
 
   frameCount += 1;
 }
@@ -385,7 +464,15 @@ function drawBird() {
   ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
   ctx.fill();
 
-  if (faceLoaded) {
+  if (showEndFace && faceEndLoaded) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, bird.radius - 1, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(faceEndImage, -bird.radius, -bird.radius, bird.radius * 2, bird.radius * 2);
+    ctx.restore();
+  } else if (faceLoaded) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(0, 0, bird.radius - 1, 0, Math.PI * 2);
