@@ -411,22 +411,39 @@ restartBtn.addEventListener('click', () => {
 });
 
 function handleStartInput(event) {
-  event.preventDefault();
   if (!running && !gameOver) {
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     jump();
   }
 }
 
+overlay.addEventListener('pointerup', handleStartInput, { passive: false });
 overlay.addEventListener('pointerdown', handleStartInput, { passive: false });
 overlay.addEventListener('click', handleStartInput);
+overlay.addEventListener('touchstart', handleStartInput, { passive: false });
+overlay.addEventListener('touchend', handleStartInput, { passive: false });
+
+canvas.addEventListener('pointerup', handleStartInput, { passive: false });
 canvas.addEventListener('pointerdown', handleStartInput, { passive: false });
+canvas.addEventListener('click', handleStartInput);
 canvas.addEventListener('touchstart', handleStartInput, { passive: false });
-canvas.addEventListener('mousedown', handleStartInput, { passive: false });
 canvas.addEventListener('touchend', handleStartInput, { passive: false });
+
+window.addEventListener('pointerup', handleStartInput, { passive: false });
 window.addEventListener('pointerdown', handleStartInput, { passive: false });
-window.addEventListener('touchstart', handleStartInput, { passive: false });
 window.addEventListener('mousedown', handleStartInput, { passive: false });
+window.addEventListener('touchstart', handleStartInput, { passive: false });
 window.addEventListener('touchend', handleStartInput, { passive: false });
+
+document.body.addEventListener('click', handleStartInput);
+document.body.addEventListener('touchstart', handleStartInput, { passive: false });
+document.body.addEventListener('touchend', handleStartInput, { passive: false });
+
+document.documentElement.addEventListener('click', handleStartInput);
+document.documentElement.addEventListener('touchstart', handleStartInput, { passive: false });
+document.documentElement.addEventListener('touchend', handleStartInput, { passive: false });
 
 window.addEventListener('telegramStart', () => {
   if (!running) {
