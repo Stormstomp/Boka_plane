@@ -159,6 +159,15 @@ function startGame() {
   window.requestAnimationFrame(loop);
 }
 
+function jump() {
+  if (gameOver) return;
+  if (!running) {
+    startGame();
+  }
+  bird.velocity = JUMP_STRENGTH;
+  playJumpSound();
+}
+
 function endGame() {
   running = false;
   gameOver = true;
@@ -174,13 +183,6 @@ function endGame() {
     window.Telegram.WebApp.MainButton.show();
     window.Telegram.WebApp.MainButton.setText('Начать заново');
   }
-}
-
-function jump() {
-  if (gameOver) return;
-  bird.velocity = JUMP_STRENGTH;
-  playJumpSound();
-  startGame();
 }
 
 function update() {
@@ -405,9 +407,17 @@ restartBtn.addEventListener('click', () => {
   }
 });
 
-overlay.addEventListener('click', () => {
-  if (!running && !gameOver) startGame();
-});
+function handleStartInput(event) {
+  event.preventDefault();
+  if (!running && !gameOver) {
+    jump();
+  }
+}
+
+overlay.addEventListener('pointerdown', handleStartInput, { passive: false });
+overlay.addEventListener('click', handleStartInput);
+canvas.addEventListener('pointerdown', handleStartInput, { passive: false });
+canvas.addEventListener('touchstart', handleStartInput, { passive: false });
 
 window.addEventListener('telegramStart', () => {
   if (!running) {
@@ -415,7 +425,7 @@ window.addEventListener('telegramStart', () => {
       resetGame();
       draw();
     }
-    startGame();
+    jump();
   }
 });
 
