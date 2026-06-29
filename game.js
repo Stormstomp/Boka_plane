@@ -193,10 +193,26 @@ function endGame() {
 function update(delta = 1) {
   if (!running) return;
 
-  bird.velocity += GRAVITY * delta;
+  // Ограничиваем delta, чтобы при лагах птица не пролетала сквозь текстуры
+  const limitedDelta = Math.min(delta, MAX_DELTA);
+
+  // 1. Физика перемещения
+  bird.velocity += GRAVITY * limitedDelta;
   bird.velocity = Math.min(bird.velocity, MAX_FALL_SPEED);
-  bird.y += bird.velocity * delta;
-  bird.rotation = Math.min(Math.max(bird.velocity * 1.8, -0.45), 1.1);
+  bird.y += bird.velocity * limitedDelta;
+
+  // 2. Аутентичный поворот (Тангаж)
+  if (bird.velocity < 2) {
+    // Если птица летит вверх или только начала падать:
+    // Мгновенно или очень быстро задираем клюв вверх (~ -25 градусов)
+    bird.rotation = -0.42;
+  } else {
+    // Когда птица набрала скорость падения (> 2):
+    // Плавно заваливаем нос вниз по ходу падения
+    bird.rotation += 0.07 * limitedDelta;
+    // Ограничиваем угол, чтобы она не сделала сальто (1.2 радиана ≈ 70 градусов)
+    bird.rotation = Math.min(bird.rotation, 1.2);
+  }
 
   if (bird.y + bird.radius >= GAME_HEIGHT || bird.y - bird.radius <= 0) {
     endGame();
