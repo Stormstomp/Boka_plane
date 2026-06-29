@@ -25,3 +25,25 @@ https://Stormstomp.github.io/Boka_plane/
 ## Telegram Web App
 
 Для использования в Telegram Web App нужно взять URL GitHub Pages и указать его в настройках кнопки бота.
+
+## Процесс обновления
+
+1. Вносите изменения в проект.
+2. Добавьте изменённые файлы в git:
+   ```powershell
+git add .
+```
+3. Сделайте коммит с понятным сообщением:
+   ```powershell
+git commit -m "Описание изменений"
+```
+4. Отправьте изменения на GitHub:
+   ```powershell
+git push origin main
+```
+5. Обязательно проверьте GitHub Pages после пуша, чтобы убедиться, что обновления применены:
+   - откройте `https://Stormstomp.github.io/Boka_plane/`
+   - обновите страницу с очисткой кеша: `Ctrl+F5`
+   - убедитесь, что изменения видны в HTML/дизайне
+
+> После каждого пуша проверка GitHub Pages обязательна.

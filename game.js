@@ -402,8 +402,11 @@ function loop(timestamp) {
 }
 
 canvas.addEventListener('click', jump);
+// Use GetKeyDown semantics: ignore repeated keydown events while key is held.
 window.addEventListener('keydown', (event) => {
   if (event.code === 'Space' || event.code === 'ArrowUp') {
+    // `event.repeat` is true for auto-repeated keydown events while key is held.
+    if (event.repeat) return; // act only once per physical press
     event.preventDefault();
     jump();
   }
