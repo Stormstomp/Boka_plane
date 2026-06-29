@@ -9,8 +9,8 @@ const restartBtn = document.getElementById('restartBtn');
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
-const GRAVITY = 0.38;
-const JUMP_STRENGTH = -9.2;
+const GRAVITY = 0.57;
+const JUMP_STRENGTH = -10.4;
 const MAX_FALL_SPEED = 12;
 const PIPE_WIDTH = 70;
 const PIPE_GAP = 150;
