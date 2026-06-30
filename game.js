@@ -16,7 +16,7 @@ const PIPE_WIDTH = 70;
 const PIPE_GAP = 150;
 const PIPE_SPACING = 200;
 const PIPE_SPEED = 2.0;
-const MAX_DELTA = 2;
+const FIXED_DELTA = 1;
 // Прощающий хитбокс: уменьшаем радиус столкновения птицы на 15%
 const BIRD_HITBOX_SCALE = 0.85;
 // Размер первых труб: начинаем с чуть более мягкой, широкой щели
@@ -27,6 +27,7 @@ const COYOTE_TIME_FRAMES = 3;
 const COYOTE_IMMUNITY_FRAMES = 2;
 
 let lastTime = 0;
+let accumulatedTime = 0;
 
 let bird;
 let pipes;
@@ -260,13 +261,10 @@ function update(delta = 1) {
     }
   }
 
-  // Ограничиваем delta, чтобы при лагах птица не пролетала сквозь текстуры
-  const limitedDelta = Math.min(delta, MAX_DELTA);
-
   // 1. Физика перемещения
-  bird.velocity += GRAVITY * limitedDelta;
+  bird.velocity += GRAVITY * delta;
   bird.velocity = Math.min(bird.velocity, MAX_FALL_SPEED);
-  bird.y += bird.velocity * limitedDelta;
+  bird.y += bird.velocity * delta;
 
   // 2. Аутентичный поворот (Тангаж)
   if (bird.velocity < 2) {
@@ -276,7 +274,7 @@ function update(delta = 1) {
   } else {
     // Когда птица набрала скорость падения (> 2):
     // Плавно заваливаем нос вниз по ходу падения
-    bird.rotation += 0.07 * limitedDelta;
+    bird.rotation += 0.07 * delta;
     // Ограничиваем угол, чтобы она не сделала сальто (1.2 радиана ≈ 70 градусов)
     bird.rotation = Math.min(bird.rotation, 1.2);
   }
@@ -517,15 +515,21 @@ function drawBird() {
 
 function loop(timestamp) {
   if (!lastTime) lastTime = timestamp;
+
   const frameTime = timestamp - lastTime;
-  const rawDelta = frameTime / (1000 / 60);
-  const delta = Math.min(MAX_DELTA, rawDelta);
   lastTime = timestamp;
 
-  displayDelta = delta;
+  displayDelta = frameTime / (1000 / 60);
   displayFPS = Math.round(1000 / Math.max(frameTime, 1));
 
-  update(delta);
+  accumulatedTime += displayDelta;
+  if (accumulatedTime > 4) accumulatedTime = 4;
+
+  while (accumulatedTime >= FIXED_DELTA) {
+    update(FIXED_DELTA);
+    accumulatedTime -= FIXED_DELTA;
+  }
+
   draw();
   if (running) {
     animationId = window.requestAnimationFrame(loop);
